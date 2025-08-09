@@ -14,19 +14,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install pnpm first so setup-node can detect it for caching
+      # Install pnpm based on `packageManager` in package.json
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          # DO NOT set `version` here – it will detect from package.json
+          run_install: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'pnpm'             # now safe; pnpm exists
+          node-version-file: '.nvmrc'   # or node-version: 22
+          cache: 'pnpm'
 
-      - name: Install dependencies
+      - name: Install deps
         run: pnpm install -w
 
       - name: Test web
