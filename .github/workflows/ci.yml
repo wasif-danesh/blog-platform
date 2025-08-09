@@ -2,16 +2,14 @@ name: CI
 
 on:
   pull_request:
-    branches: [ main ]
-  push:
-    branches: [ main ]
-  workflow_dispatch:  # 👈 This lets you run it manually from the Actions tab
+    branches: [ dev ]
+  workflow_dispatch:
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -20,8 +18,25 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-      - name: Run build
-        run: pnpm build
+      - name: Install dependencies
+        run: pnpm install -w
+
+      - name: Run web tests
+        run: pnpm -C apps/web test -- --run
+
+      - name: Run API tests
+        run: pnpm -C apps/api test
+
+      - name: Build Storybook
+        run: pnpm --filter @ui/storybook build
+
+      - name: Upload Storybook build
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-static
+          path: packages/ui/storybook-static
