@@ -1,11 +1,12 @@
+// Force SSR (no SSG) for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export const dynamic = 'force-dynamic';  // render at request time (SSR)
-export const revalidate = 0; // belt & suspenders
+import dynamic from 'next/dynamic';
 
-import { headers } from 'next/headers'; // guarantees dynamic on Next/Vercel
-import PublicGrid from './PublicGrid';
+// ⬇️ Load the client component without SSR to avoid client-manifest issues
+const PublicGrid = dynamic(() => import('./PublicGrid'), { ssr: false });
 
 export default function Home() {
-    headers(); // touching headers() marks the route as dynamic in all cases
     return <PublicGrid />;
 }
