@@ -1,6 +1,8 @@
-'use client';
+'use client'; // if you're using MUI/hooks here
 
-import { AppBar, Toolbar, Typography, Container, Card, CardContent } from '@mui/material';
+export const dynamic = 'force-dynamic'; // render at request time (SSR)
+
+import { AppBar, Toolbar, Typography, Container } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { PostCard } from '@ui/storybook';
 

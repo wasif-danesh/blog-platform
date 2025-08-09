@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, CardContent, Typography } from '@mui/material';
 
 export function PostCard({ title, excerpt }: { title: string; excerpt?: string }) {
