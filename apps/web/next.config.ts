@@ -1,7 +1,9 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+    transpilePackages: ['@ui/storybook'],
+    // optional, helps with ESM deps in monorepos:
+    experimental: { esmExternals: 'loose' }
 };
 
 export default nextConfig;
