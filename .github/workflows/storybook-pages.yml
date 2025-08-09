@@ -31,11 +31,13 @@ jobs:
       - name: Install workspace deps
         run: pnpm install -w --frozen-lockfile
 
-      # Ensure the UI package has its own node_modules (some runners need this)
       - name: Ensure UI deps
         run: pnpm -C packages/ui install
 
-      # Optional: confirm CLI exists in the UI package context
+      # NEW: configure Pages so deploy step has a target
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
       - name: Storybook version
         run: pnpm --filter ./packages/ui exec storybook --version
 
