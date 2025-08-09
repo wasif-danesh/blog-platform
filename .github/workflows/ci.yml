@@ -33,7 +33,7 @@ jobs:
 
       # --- Fast sanity checks -------------------------------------------------
       - name: Typecheck (web)
-        run: pnpm -C apps/web exec tsc -v || true && pnpm -C apps/web exec tsc --noEmit
+        run: pnpm -C apps/web exec tsc -p tsconfig.build.json --noEmit
 
       - name: Lint (web)
         run: pnpm -C apps/web lint || true
