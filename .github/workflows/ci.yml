@@ -8,34 +8,37 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ 20, 22 ]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
+      # Install pnpm first so setup-node can detect it for caching
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'             # now safe; pnpm exists
+
       - name: Install dependencies
         run: pnpm install -w
 
-      - name: Run web tests
+      - name: Test web
         run: pnpm -C apps/web test -- --run
 
-      - name: Run API tests
+      - name: Test api
         run: pnpm -C apps/api test
 
       - name: Build Storybook
         run: pnpm --filter @ui/storybook build
 
-      - name: Upload Storybook build
+      - name: Upload Storybook
         uses: actions/upload-artifact@v4
         with:
           name: storybook-static
