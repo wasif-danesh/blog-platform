@@ -78,6 +78,17 @@ jobs:
       - name: Ensure web deps
         run: pnpm -C apps/web install
 
+      # Lint (fail on errors, allow warnings)
+      - name: Lint (web)
+        run: pnpm -C apps/web lint
+
+      - name: Lint (api)
+        run: pnpm -C apps/api lint
+
+      # Type-check API (web is type-checked during Next build)
+      - name: Type-check (api)
+        run: pnpm -C apps/api exec tsc --noEmit
+
       # ---------- TESTS ----------
       - name: Check vitest presence (web)
         run: pnpm -C apps/web exec vitest --version
