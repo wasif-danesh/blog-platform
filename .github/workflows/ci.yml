@@ -53,17 +53,17 @@ jobs:
 
       # --- Build Storybook (packages/ui) -------------------------------------
       - name: Build Storybook (ui)
-        if: matrix.node == 22
+        if: ${{ !matrix.node || matrix.node == 22 }}
         run: pnpm --filter @ui/storybook build
 
       - name: Upload Storybook static
-        if: matrix.node == 22
+        if: ${{ !matrix.node || matrix.node == 22 }}
         uses: actions/upload-artifact@v4
         with:
-          name: storybook-static
+          name: storybook-static-${{ github.run_id }}
           path: packages/ui/storybook-static
-          overwrite: true
           if-no-files-found: error
+          retention-days: 7
 
       # --- Optional: Build Next.js for extra confidence ----------------------
       # Disable telemetry to keep logs clean
