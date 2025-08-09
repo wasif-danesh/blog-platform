@@ -1,0 +1,23 @@
+{
+  "name": "@ui/storybook",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build": "storybook build",
+    "test": "storybook test --watch=false"
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "8.4.6",
+    "@storybook/addon-essentials": "8.4.6",
+    "@storybook/addon-interactions": "8.4.6",
+    "@storybook/nextjs": "8.4.6",
+    "@storybook/test": "8.4.6",
+    "storybook": "8.4.6"
+  }
+}
