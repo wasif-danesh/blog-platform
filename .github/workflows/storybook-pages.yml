@@ -26,13 +26,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: pnpm
 
-      - name: Install deps
+      - name: Install workspace deps
         run: pnpm install -w --frozen-lockfile
 
+      # Ensure the UI package has its own node_modules (some runners need this)
+      - name: Ensure UI deps
+        run: pnpm -C packages/ui install
+
+      # Optional: confirm CLI exists in the UI package context
+      - name: Storybook version
+        run: pnpm --filter ./packages/ui exec storybook --version
+
       - name: Build Storybook
-        run: pnpm --filter @ui/storybook build
+        run: pnpm --filter ./packages/ui build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
