@@ -1,11 +1,8 @@
-// Force SSR (no SSG) for this route
+// Force SSR (no SSG) and disable ISR
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import dynamic from 'next/dynamic';
-
-// ⬇️ Load the client component without SSR to avoid client-manifest issues
-const PublicGrid = dynamic(() => import('./PublicGrid'), { ssr: false });
+import PublicGrid from './PublicGrid'; // client component
 
 export default function Home() {
     return <PublicGrid />;
