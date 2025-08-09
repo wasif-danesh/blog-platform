@@ -1,9 +1,7 @@
-import '@testing-library/jest-dom/vitest'; // 👈 auto-extends expect for Vitest
+import { vi } from 'vitest';
+import '@testing-library/jest-dom';
 
-import { afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
-
-// Clean up the DOM after each test
-afterEach(() => {
-    cleanup();
-});
+// Mock Next.js server-only headers() API to avoid "outside request scope" errors
+vi.mock('next/headers', () => ({
+    headers: () => new Headers(), // Stubbed headers object
+}));
