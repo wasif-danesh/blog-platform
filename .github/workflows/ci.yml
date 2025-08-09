@@ -1,4 +1,4 @@
-name: CI
+name: CI (dev)
 
 on:
   pull_request:
@@ -12,35 +12,51 @@ jobs:
       matrix:
         node: [ 20, 22 ]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # Install pnpm based on `packageManager` in package.json
+      # Install pnpm first; then setup-node can enable pnpm cache safely
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          # DO NOT set `version` here – it will detect from package.json
+          # don't set "version" so it follows packageManager in package.json
           run_install: false
 
-      - name: Set up Node.js
+      - name: Use Node 22 (from .nvmrc if present)
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'   # or node-version: 22
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: Install deps
+      - name: Install workspace deps
         run: pnpm install -w
 
-      - name: Test web
+      # --- Fast sanity checks -------------------------------------------------
+      - name: Typecheck (web)
+        run: pnpm -C apps/web exec tsc -v || true && pnpm -C apps/web exec tsc --noEmit
+
+      - name: Lint (web)
+        run: pnpm -C apps/web lint || true
+
+      - name: Test (web)
         run: pnpm -C apps/web test -- --run
 
-      - name: Test api
+      - name: Test (api)
         run: pnpm -C apps/api test
 
-      - name: Build Storybook
+      # --- Build Storybook (packages/ui) -------------------------------------
+      - name: Build Storybook (ui)
         run: pnpm --filter @ui/storybook build
 
-      - name: Upload Storybook
+      - name: Upload Storybook static
         uses: actions/upload-artifact@v4
         with:
           name: storybook-static
           path: packages/ui/storybook-static
+
+      # --- Optional: Build Next.js for extra confidence ----------------------
+      # Disable telemetry to keep logs clean
+      - name: Build web (Next.js)
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+        run: pnpm -C apps/web build
