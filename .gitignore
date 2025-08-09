@@ -1,1 +1,7 @@
-node_modules/
+node_modules
+dist
+.next
+storybook-static
+.env
+.env.*
+.DS_Store

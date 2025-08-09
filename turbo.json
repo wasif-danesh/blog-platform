@@ -1,0 +1,9 @@
+{
+  "pipeline": {
+    "build": { "dependsOn": ["^build"], "outputs": ["dist/**", ".next/**", "storybook-static/**"] },
+    "dev": { "cache": false },
+    "test": { "dependsOn": ["^build"] },
+    "lint": {},
+    "typecheck": {}
+  }
+}
