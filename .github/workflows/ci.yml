@@ -1,0 +1,120 @@
+name: CI (dev)
+
+on:
+  pull_request:
+    branches: [ dev ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install pnpm first so setup-node can cache it safely
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'pnpm'
+
+      # ---------- CACHES ----------
+      - name: Resolve pnpm store path
+        id: pnpm-store
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: apps/web/.next/cache
+          key: next-cache-${{ runner.os }}-${{ hashFiles('apps/web/**','packages/ui/**','pnpm-lock.yaml') }}
+          restore-keys: |
+            next-cache-${{ runner.os }}-
+
+      - name: Cache Storybook cache
+        uses: actions/cache@v4
+        with:
+          path: packages/ui/node_modules/.cache/storybook
+          key: sb-cache-${{ runner.os }}-${{ hashFiles('packages/ui/**','pnpm-lock.yaml') }}
+          restore-keys: |
+            sb-cache-${{ runner.os }}-
+
+      # ---------- INSTALL ----------
+      - name: Install workspace deps
+        run: pnpm install -w --frozen-lockfile
+
+      # Some runners still need a local install for package bins
+      - name: Ensure web deps
+        run: pnpm -C apps/web install
+
+      # Lint (fail on errors, allow warnings)
+      - name: Lint (web)
+        run: pnpm -C apps/web lint
+
+      - name: Lint (api)
+        run: pnpm -C apps/api lint
+
+      # Type-check API (web is type-checked during Next build)
+      - name: Type-check (api)
+        run: pnpm -C apps/api exec tsc --noEmit
+
+      # ---------- TESTS ----------
+      - name: Check vitest presence (web)
+        run: pnpm -C apps/web exec vitest --version
+
+      - name: Test (web)
+        run: pnpm -C apps/web exec vitest run
+
+      - name: Test (api)
+        run: pnpm -C apps/api test
+
+      # ---------- STORYBOOK (only once per matrix) ----------
+      - name: Build Storybook (ui)
+        if: ${{ !matrix.node || matrix.node == 22 }}
+        run: pnpm --filter @ui/storybook build
+
+      - name: Upload Storybook static
+        if: ${{ !matrix.node || matrix.node == 22 }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-static-${{ github.run_id }}
+          path: packages/ui/storybook-static
+          if-no-files-found: error
+          retention-days: 7
+
+      # ---------- BUILD WEB ----------
+      - name: Build web (Next.js)
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+        run: pnpm -C apps/web build
