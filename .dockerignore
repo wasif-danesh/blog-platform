@@ -1,0 +1,8 @@
+node_modules
+pnpm-store
+.vscode
+.idea
+dist
+.next
+storybook-static
+coverage

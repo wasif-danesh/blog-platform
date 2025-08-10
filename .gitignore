@@ -4,6 +4,8 @@ dist
 storybook-static
 .env
 .env.*
+apps/**/.env
+apps/**/.env.local
 .DS_Store
 # Ignore JetBrains IDE settings (WebStorm, IntelliJ, PhpStorm, etc.)
 .idea/
